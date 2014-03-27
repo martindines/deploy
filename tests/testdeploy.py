@@ -1,4 +1,4 @@
-import unittest, sys
+import unittest, sys, os, StringIO
 sys.path.append('./')
 from config import config
 from deploy import deploy
@@ -10,10 +10,17 @@ class TestDeploy(unittest.TestCase):
         self.object = deploy()
         self.config = config()
 
+        self.output = StringIO.StringIO()
+        self.saved_stdout = sys.stdout
+        sys.stdout = self.output
+
     def createConfigurationFileWithContent(self, content):
         file = open(self.config.FILENAME, 'w')
         file.write(content)
         file.close()
+
+    def deleteConfigurationFile(self):
+        os.remove(self.config.FILENAME)
 
     def test_ItDoesntDeployWithoutARemoteInConfiguration(self):
         self.assertFalse(self.object.deploy(), 'Expected deploy to halt because remotes are empty')
@@ -30,13 +37,18 @@ class TestDeploy(unittest.TestCase):
 
         self.object.deploy()
         self.assertEqual(self.object.remote, expected, 'Expected deploy to set remote to X, but remote value is not X')
+        self.deleteConfigurationFile()
 
     def test_ItListsPossibleRemotesWithMultipleRemotesInConfiguration(self):
         testFileContent = 'username,0.0.0.0,password\nusername1,0.0.0.1,password1'
         self.createConfigurationFileWithContent(testFileContent)
+        self.object.deploy()
+        self.assertEqual(self.output.getvalue().strip(), 'Remotes in configuration:\n0 username@0.0.0.0\n1 username1@0.0.0.1', 'Expected deploy to prompt user to select remote')
+        self.deleteConfigurationFile()
 
-        self.assertTrue(self.object.deploy() == 'Please select remote', 'Expected deploy to prompt user to select remote')
-
+    def tearDown(self):
+        self.output.close()
+        sys.stdout = self.saved_stdout
 
 if __name__ == '__main__':
     unittest.main()

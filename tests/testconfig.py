@@ -27,11 +27,18 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.object.does_configuration_file_exist(), 'Configuration file doesnt exist - Expected configuration file')
         self.deleteConfigurationFile()
 
+    def test_ItRaisesExceptionWhenGettingContentsFromEmptyConfigurationFile(self):
+        self.assertRaises(Exception, self.object.get_content_from_configuration_file)
+
     def test_ItGetContentsFromConfigurationFile(self):
         fileContent = 'Hello, world!'
         self.createConfigurationFileWithContent(fileContent)
         self.assertEqual(self.object.get_content_from_configuration_file(), fileContent, 'Contents could not be retrieved from file')
         self.deleteConfigurationFile()
+
+    def test_ItGetsListWhenGettingRemotesFromEmptyContent(self):
+        fileContent = ''
+        self.assertEqual(self.object.get_remotes_from_content(fileContent), [], 'Expected to get empty List when configuration is does not contain remotes')
 
     def test_ItGetsRemoteFromContent(self):
         testFileContent = 'username,0.0.0.0,password'
@@ -69,6 +76,9 @@ class TestConfig(unittest.TestCase):
 
         self.assertEqual(self.object.get_remotes_from_content(fileContent), expected, 'Remotes not extracted from contents')
         self.deleteConfigurationFile()
+
+    def test_ItGetsListWhenGettingRemotesFromEmptyConfig(self):
+        self.assertEqual(self.object.get_remotes(), [], 'Remotes not returned')
 
     def test_ItGetsRemotes(self):
         testFileContent = 'username,0.0.0.0,password\nusername1,0.0.0.1,password1'
