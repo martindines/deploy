@@ -3,6 +3,11 @@ sys.path.append('./')
 from config import config
 from deploy import deploy
 
+'''
+Notes
+Take a look at: with mock.patch('__builtin__.raw_input', return_value='x'):
+For mocking user input. Arguably how the app receives input shouldn't be coupled
+'''
 
 class TestDeploy(unittest.TestCase):
 
@@ -39,7 +44,7 @@ class TestDeploy(unittest.TestCase):
         self.assertEqual(self.object.remote, expected, 'Expected deploy to set remote to X, but remote value is not X')
         self.deleteConfigurationFile()
 
-    def test_ItListsPossibleRemotesWithMultipleRemotesInConfiguration(self):
+    def test_ItPromptsToSelectARemoteWhenMultipleRemotesInConfiguration(self):
         testFileContent = 'username,0.0.0.0,password\nusername1,0.0.0.1,password1'
         self.createConfigurationFileWithContent(testFileContent)
         self.object.deploy()
